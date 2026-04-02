@@ -1,0 +1,185 @@
+---
+geometry: left=0.8in,right=0.8in,top=0.8in,bottom=0.8in
+fontsize: 11pt
+title: "STA 445 S26 Assignment 4"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+Load all the packages you will use in this chunk.  Notice, I have set include = FALSE because I don't want to see you loading packages in the output.
+
+```{r packages, include = FALSE}
+library(tidyverse) 
+library(stringr)
+library(refinr)
+library(tidyr)
+library(lubridate)
+library(dplyr)
+```
+
+
+## Problem 1
+
+For the following regular expression, explain in words what it matches on. Then add test strings to demonstrate that it in fact does match on the pattern you claim it does.  Do at least 4 tests.  Make sure that your test set of strings has several examples that match as well as several that do not. Make sure to remove the `eval=FALSE` so that the code and output shows in your pdf.
+
+a. This regular expression matches:  *any string that contains at least one lowercase letter 'a' anywhere in it.*
+
+```{r}
+        strings <- c("cat", "dog", "apple", "Ant")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, 'a') )
+```
+b. This regular expression matches:  *any string that contains the consecutive lowercase characters 'ab' anywhere in it.*
+
+```{r}
+        strings <- c("ab", "cab", "a b", "ac", "table")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, 'ab') )
+```
+
+c. This regular expression matches:  *any string that contains at least one lowercase 'a' or 'b' anywhere in it.*
+
+```{r}
+        strings <- c("a", "b", "c", "AB", "ca", "xyz")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '[ab]') )
+```
+
+d.  This regular expression matches:  *any string that starts with either lowercase 'a' or 'b'.*
+
+```{r}
+        strings <- c("apple", "banana", "chair", "Ant", "cat")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '^[ab]') )
+```
+
+e. This regular expression matches:  *any string that contains one or more digits followed by exactly one whitespace character, followed by either 'a' or 'A'.*
+
+```{r}
+        strings <- c("123 a", "45 A", "6 b", "789a", "123  a", "abc 1 a")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '\\d+\\s[aA]') )
+```
+
+f. This regular expression matches:  *any string that contains one or more digits followed by zero or more whitespace characters, followed by either 'a' or 'A'.*
+
+```{r}
+        strings <- c("123 a", "45 A", "6 b", "789a", "123  a", "abc 1 a")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '\\d+\\s*[aA]') )
+```
+
+g. This regular expression matches:  *any string, including the empty string, as it allows zero or more of any characters.*
+
+```{r}
+        strings <- c("anything", "123", "a b c", "", "special!@#", " ", "none")
+        data.frame( string = strings ) %>%
+      mutate( result = str_detect(string, '.*') )
+```
+
+h. This regular expression matches: *any string that starts with exactly two word characters (letters, digits, or underscore) followed immediately by 'bar'.*
+
+```{r}
+        strings <- c("aabar", "12bar", "a1barx", "abar", "foo bar", "_2bar", "!!bar")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '^\\w{2}bar') )
+```
+
+i. This regular expression matches: *any string that either contains the exact sequence 'foo.bar' (with a literal dot) anywhere or starts with exactly two word characters followed by 'bar'.*
+
+```{r}
+       strings <- c("foo.bar", "aabar", "foo bar", "foo.barx", "12bar end", "contains foo.bar", "^^bar", "foobar")
+        data.frame( string = strings ) %>%
+          mutate( result = str_detect(string, '(foo\\.bar)|(^\\w{2}bar)') )
+```
+    
+## Problem 2
+
+The following file names were used in a camera trap study. The S number represents the site, P is the plot within a site, C is the camera number within the plot, the first string of numbers is the YearMonthDay and the second string of numbers is the HourMinuteSecond.
+
+```{r}
+    file.names <- c( 'S123.P2.C10_20120621_213422.jpg',
+                     'S10.P1.C1_20120622_050148.jpg',
+                 'S187.P2.C2_20120702_023501.jpg')
+```
+    
+Produce a data frame with columns corresponding to the `site`, `plot`, `camera`, `year`, `month`, `day`, `hour`, `minute`, and `second` for these three file names. So we want to produce code that will create the data frame:
+    
+```{r, eval=FALSE}
+Site Plot Camera Year Month Day Hour Minute Second
+S123   P2    C10 2012    06  21   21     34     22
+S10   P1     C1 2012    06  22   05     01     48
+S187   P2     C2 2012    07  02   02     35     01
+```
+
+```{r}
+name.files <- tibble(file = file.names) |>
+  mutate(file = str_remove(file, "\\.jpg$")) |>
+  separate(file, into = c("Site", "Plot", "Camera", "date_str", "time_str"), sep = "[._]") |>
+  mutate(Year = str_sub(date_str, 1, 4),
+         Month = str_sub(date_str, 5, 6),
+         Day = str_sub(date_str, 7, 8),
+         Hour = str_sub(time_str, 1, 2),
+         Minute = str_sub(time_str, 3, 4),
+         Second = str_sub(time_str, 5, 6)) |>
+  select(Site, Plot, Camera, Year, Month, Day, Hour, Minute, Second)
+
+name.files
+```
+
+3. The full text from Lincoln's Gettysburg Address is given below. Calculate the mean word length *Note: consider 'battle-field' as one word with 11 letters*).
+
+```{r}
+Gettysburg <- 'Four score and seven years ago our fathers brought forth on this
+continent, a new nation, conceived in Liberty, and dedicated to the proposition
+that all men are created equal. Now we are engaged in a great civil war, testing
+whether that nation, or any nation so conceived and so dedicated, can long
+endure. We are met on a great battle-field of that war. We have come to dedicate
+a portion of that field, as a final resting place for those who here gave their
+lives that that nation might live. It is altogether fitting and proper that we
+should do this. But, in a larger sense, we can not dedicate -- we can not
+consecrate -- we can not hallow -- this ground. The brave men, living and dead,
+who struggled here, have consecrated it, far above our poor power to add or
+detract. The world will little note, nor long remember what we say here, but it
+can never forget what they did here. It is for us the living, rather, to be
+dedicated here to the unfinished work which they who fought here have thus far
+so nobly advanced. It is rather for us to be here dedicated to the great task
+remaining before us -- that from these honored dead we take increased devotion
+to that cause for which they gave the last full measure of devotion -- that we
+here highly resolve that these dead shall not have died in vain -- that this
+nation, under God, shall have a new birth of freedom -- and that government of
+the people, by the people, for the people, shall not perish from the earth.'
+```
+
+
+```{r}
+Gettysburg_clean <- str_replace(Gettysburg, "battle-field", "battlefield")
+words <- unlist(str_split(Gettysburg_clean, "\\s+"))
+clean_words <- str_replace_all(words, "^[[:punct:]]+|[[:punct:]]+$", "")
+clean_words2 <- clean_words[clean_words != ""]
+word_lengths <- str_length(clean_words2)
+mean(word_lengths)
+```
+
+```{r}
+clean_words2
+```
+
+```{r}
+clean_words
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

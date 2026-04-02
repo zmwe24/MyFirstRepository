@@ -1,0 +1,195 @@
+---
+geometry: left=0.8in,right=0.8in,top=0.8in,bottom=0.8in
+fontsize: 11pt
+title: "STA 445 S26 Assignment 3"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r include = FALSE}
+library(Lock5Data)
+library(tidyverse)
+library(readxl)
+library(microbenchmark)
+```
+
+Conjunction Junction! This assignment is all about functions!(Chapter 10)
+
+## Problem 1 (A Warmup Problem)
+
+a. Create a function with two inputs, a and b, that returns the output $b\times a!$.  Name the function prob1a.fun.
+
+```{r}
+prob1a.fun <- function(a, b){
+  result <- b * factorial(a)
+  return(result)
+}
+```
+
+
+b. We will test the function.  Run prob1a.fun(5, 4).  Did you get the correct result?
+
+```{r}
+prob1a.fun(5, 4)
+```
+
+c. Create a function with two inputs, a and b, that returns the output $b\times a!$ if $a > b$ and returns $b-a$ if $b \geq a$.   Name the function prob1c.fun  
+
+```{r}
+prob1c.fun <- function(a, b){
+  if(a > b){
+    return(b * factorial(a))
+  }else if(b >= a){
+    return(b-a)
+  }
+  else{return(b)}
+}
+```
+
+
+d. We will test the function.  Run prob1c.fun(5, 4).  Did you get the correct result? Run prob1c.fun(4, 5).  Did you get the correct result?
+
+```{r}
+prob1c.fun(5, 4)
+prob1c.fun(4, 5)
+```
+
+
+## Problem 2 (Writing Functions for Computational Efficency)
+
+Write a function that calculates the density function of a Uniform continuous variable on the interval $\left(a,b\right)$. The function is defined as 
+
+$$ f\left(x\right)=\begin{cases}
+    \frac{1}{b-a} & \;\;\;\textrm{if }a\le x\le b\\
+    0 & \;\;\;\textrm{otherwise}
+    \end{cases} $$
+    
+We want to write a function `duniform(x, a, b)` that takes an arbitrary value of `x` and parameters a and b and return the appropriate height of the density function. For various values of `x`, `a`, and `b`, demonstrate that your function returns the correct density value. 
+
+a.  Write your function without regard for it working with vectors of data.  Demonstrate that it works by calling the function three times, once where $x< a$, once where $a < x < b$, and finally once where $b < x$.  Make sure to show the output for the three tests.
+
+```{r}
+duniform <- function(x, a, b) {
+  if (a <= x & x <= b) {
+    return(1 / (b - a))
+  } else {
+    return(0)
+  }
+}
+```
+
+
+```{r}
+duniform(-1, 0, 1)
+duniform(1, 0, 2)
+duniform(2, 0, 1)
+```
+
+
+b. Next we force our function to work correctly for a vector of `x` values. Modify your function in part (a) so that the core logic is inside a `for` statement and the loop moves through each element of `x` in succession.
+
+```{r}
+duniform <- function(x, a, b) {
+  results <- numeric(length(x))
+  for (i in 1:length(x)) {
+    if (a <= x[i] & x[i] <= b) {
+      results[i] <- 1 / (b - a)
+    } else {
+      results[i] <- 0
+    }
+  }
+  return(results)
+}
+```
+
+
+Verify that your function works correctly by running the following code:
+```{r fig.height=3}
+        data.frame( x=seq(-1, 12, by=.001) ) %>%
+          mutate( y = duniform(x, 4, 8) ) %>%
+          ggplot( aes(x=x, y=y) ) +
+          geom_step()
+```
+
+c.  Install the R package `microbenchmark`. We will use this to discover the average duration your function takes.
+
+```{r message=FALSE, warning=FALSE}
+microbenchmark::microbenchmark( duniform( seq(-4,12,by=.0001), 4, 8), times=100)
+```
+
+This will call the input R expression 100 times and report summary statistics on how long it took for the code to run. In particular, look at the median time for evaluation.
+
+d. Instead of using a `for` loop, it might have been easier to use an `ifelse()` command. Rewrite your function to avoid the `for` loop and just use an `ifelse()` command. Verify that your function works correctly by producing a plot, and also run the `microbenchmark()`. Which version of your function was easier to write? Which ran faster?
+
+```{r}
+duniform.d <- function(x, a, b) {
+  ifelse(a <= x & x <= b, 1 / (b - a), 0)
+}
+```
+
+```{r fig.height=3}
+        data.frame( x=seq(-1, 12, by=.001) ) %>%
+          mutate( y = duniform.d(x, 4, 8) ) %>%
+          ggplot( aes(x=x, y=y) ) +
+          geom_step()
+```
+
+```{r message=FALSE, warning=FALSE}
+microbenchmark::microbenchmark( duniform.d( seq(-4,12,by=.0001), 4, 8), times=100)
+```
+This was much easier to write and is approximately 11.28 milliseconds faster (on average).
+
+## Problem 3 (Modify your Uniform Function)
+
+I very often want to provide default values to a parameter that I pass to a function. For example, it is so common for me to use the `pnorm()` and `qnorm()` functions on the standard normal, that R will automatically use `mean=0` and `sd=1` parameters unless you tell R otherwise. To get that behavior, we just set the default parameter values in the definition. When the function is called, the user specified value is used, but if none is specified, the defaults are used. Look at the help page for the functions `dunif()`, and notice that there are a number of default parameters. For your `duniform()` function provide default values of `0` and `1` for `a` and `b`. Demonstrate that your function is appropriately using the given default values by producing a plot by running the code chunk below. 
+
+```{r}
+duniform3 <- function(x, a = 0, b = 1) {
+  ifelse(a <= x & x <= b, 1 / (b - a), 0)
+}
+```
+
+
+```{r fig.height=3}
+        data.frame( x=seq(-1, 2, by=.001) ) %>%
+          mutate( y = duniform3(x) ) %>%
+          ggplot( aes(x=x, y=y) ) +
+          geom_step()
+```
+
+
+## Problem 4
+
+Note:  We will use this function when we create a package.  Don't forget where you save this assignment.
+
+In this example, we'll write a function that will output a  vector of the first $n$ terms in the child's game *Fizz Buzz*. The input of the function is a positive integer $n$ and the output will be a vector of characters. The goal is to count as high as you can, but for any number evenly divisible by 3, substitute "Fizz" and any number evenly divisible by 5, substitute "Buzz", and if it is divisible by both, substitute "Fizz Buzz". So the sequence will look like 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, ... 
+
+a. Write the function and name it FizzBuzz.
+
+```{r}
+FizzBuzz <- function(n) {
+  result <- character(n)
+  for (i in 1:n) {
+    if (i %% 15 == 0) {
+      result[i] <- "Fizz Buzz"
+    } else if (i %% 3 == 0) {
+      result[i] <- "Fizz"
+    } else if (i %% 5 == 0) {
+      result[i] <- "Buzz"
+    } else {
+      result[i] <- as.character(i)
+    }
+  }
+  return(result)
+}
+```
+
+
+b. Test the function by running FizzBuzz(50).  Did it work?
+
+```{r}
+FizzBuzz(50)
+```
+
+    
+

@@ -1,0 +1,178 @@
+---
+geometry: left=0.8in,right=0.8in,top=0.8in,bottom=0.8in
+fontsize: 11pt
+title: "STA 445 S26 Assignment 2"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+Load all the packages you will need here.  Notice that the code chunk option has been set to include = FALSE.  This means the code will run, but the output will not be shown in the knitted document.  Thus, you do not need to worry about suppressing warning messages.  This code will be helpful when writing a project report.
+
+```{r include = FALSE}
+library(Lock5Data)
+library(tidyverse)
+library(readxl)
+```
+
+# Problem 1
+
+Download from GitHub the data file by clicking on this link:  [Example_5.xls](https://github.com/BuscagliaR/STA_444_v2/raw/refs/heads/main/data-raw/Example_5.xls). Open it in Excel and figure out which sheet of data we should import into R. At the same time figure out how many initial rows need to be skipped. 
+
+a. Import the dataset into a data frame and show the structure of the imported data using the `str()` command. Make sure that your data has $n=31$ observations and the three columns are appropriately named. You are not allowed to make any modifications to the data file.  All changes must be made within this rmd file.
+
+```{r message=FALSE}
+example_5 <- read_excel(
+  "Example_5.xls",
+  sheet = "RawData",
+  range = "A5:C36",
+  col_names = TRUE)
+
+str(example_5)
+```
+
+b. Use `slice_sample()` to show five random rows of the dataset.
+
+```{r}
+slice_sample(example_5, n = 5)
+```
+
+# Problem 2
+
+Download from GitHub the data file by clicking on this link: [Example_3.xls](https://github.com/BuscagliaR/STA_444_v2/raw/refs/heads/main/data-raw/Example_3.xls). Import the data set into a data frame and show the structure of the imported data using the `str()` command. Make sure the Tesla values are `NA` where appropriate and that both `-9999` and `NA` are imported as NA values. You are not allowed to make any modifications to the data file.  All changes must be made within this rmd file.
+
+```{r message=FALSE}
+example_3 <- read_excel(
+  "Example_3.xls",
+  sheet = "data",
+  range = "A1:L34",
+  col_names = TRUE,
+  na = c("-9999", "NA"))
+
+str(example_3)
+```
+
+b. Use the `tail()` command to show the last five rows of a data table. 
+
+```{r}
+tail(example_3, n = 5)
+```
+
+c. Use `slice_sample()` to show five random rows of the dataset.
+
+```{r}
+slice_sample(example_3, n = 5)
+```
+
+
+# Problem 3
+
+Download all of the files from GitHub `data-raw/InsectSurveys` directory which have been linked [here.](https://github.com/BuscagliaR/STA_444_v2/tree/main/data-raw/InsectSurveys) Each month's file contains a sheet with information about each of the sites that was surveyed. The second sheet contains information about the number of each species that was observed at each site. 
+
+a. Import the data for each month and create a single `site` data frame with information from each month. You are not allowed to make any modifications to the data file.  All changes must be made within this rmd file. You may need to change column names and reorganize columns.
+
+```{r message=FALSE}
+may <- read_excel(
+  "InsectSurveys/May.xlsx",
+  sheet = "Sites",
+  range = "A1:F10",
+  col_names = TRUE)
+
+colnames(may) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+may
+```
+
+```{r}
+june <- read_excel(
+  "InsectSurveys/June.xlsx",
+  sheet = "Sites",
+  range = "A1:F10",
+  col_names = TRUE)
+
+colnames(june) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+june
+```
+
+```{r}
+july <- read_excel(
+  "InsectSurveys/July.xlsx",
+  sheet = "Sites",
+  range = "A1:F10",
+  col_names = TRUE)
+
+colnames(july) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+july
+```
+
+```{r}
+august <- read_excel(
+  "InsectSurveys/August.xlsx",
+  sheet = "sites",
+  range = "A1:F10",
+  col_names = TRUE)
+
+colnames(august) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+august
+```
+
+```{r}
+september <- read_excel(
+  "InsectSurveys/September.xlsx",
+  sheet = "sites",
+  range = "A1:F10",
+  col_names = TRUE)
+
+colnames(september) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+september
+```
+
+```{r}
+october <- read_excel(
+  "InsectSurveys/October.xlsx",
+  sheet = "Sites",
+  range = "A1:F10",
+  col_names = TRUE,
+  na = c("Did not vist"))
+
+colnames(october) <- c("Site Name","Pond Area","Water Depth","ph","Date","Observer")
+ 
+october
+```
+```{r}
+site <- rbind(may, june, july, august, september, october)
+```
+
+b. Show the structure of the data frame using the `str()` command.
+
+```{r}
+str(site)
+```
+
+c. Use `slice_sample()` to show eight random rows of the dataset.
+
+```{r}
+slice_sample(site, n = 8)
+```
+
+d. Comment on the importance of consistency of your data input sheets.
+
+If you are not consistent with the input of data (i.e. naming the columns...) it gives you more tedious work to do when cleaning the data (which is shown nicely above as an example of what not to do when data gathering).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
